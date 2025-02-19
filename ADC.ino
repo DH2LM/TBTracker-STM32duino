@@ -7,8 +7,13 @@
 // Useful for checking battery voltage.
 float ReadVCC() 
 {
-   
-  return (3.3);
+  uint32_t batval = 0xFFFFFFFF;
+  batval = analogRead(BAT_ADC);
+
+  float batVol = (float)batval * 0.006764706;
+  // SerialDebug.print("Value of Battery ADC: ");
+  // SerialDebug.println(batval);
+  return (batVol);
 }
 
 
@@ -19,5 +24,5 @@ float ReadTemp(void)
 {
 
   // The returned temperature is in degrees Celcius.
-  return (24.0);
+  return (0.0);
 }

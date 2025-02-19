@@ -35,7 +35,7 @@ void CreateTXLine(const char *PayloadID, unsigned long aCounter, const char *aPr
    char Sen[5];
    int Count, i, j;
    unsigned char c;
-   unsigned int CRC, xPolynomial;
+   unsigned int uiCRC, xPolynomial;
    char LatitudeString[16], LongitudeString[16], CRCString[8];
    char InternalTemp[10];
    char BattVoltage[10];
@@ -77,26 +77,26 @@ void CreateTXLine(const char *PayloadID, unsigned long aCounter, const char *aPr
    Count = strlen(Sentence);
 
    // Calc CRC
-   CRC = 0xffff;           // Seed
+   uiCRC = 0xffff;           // Seed
    xPolynomial = 0x1021;
    
    for (i = strlen(aPrefix); i < Count; i++)
    {   // For speed, repeat calculation instead of looping for each bit
-      CRC ^= (((unsigned int)Sentence[i]) << 8);
+      uiCRC ^= (((unsigned int)Sentence[i]) << 8);
       for (j=0; j<8; j++)
       {
-          if (CRC & 0x8000)
-              CRC = (CRC << 1) ^ 0x1021;
+          if (uiCRC & 0x8000)
+              uiCRC = (uiCRC << 1) ^ 0x1021;
           else
-              CRC <<= 1;
+              uiCRC <<= 1;
       }
    }
 
    Sentence[Count++] = '*';
-   Sentence[Count++] = Hex((CRC >> 12) & 15);
-   Sentence[Count++] = Hex((CRC >> 8) & 15);
-   Sentence[Count++] = Hex((CRC >> 4) & 15);
-   Sentence[Count++] = Hex(CRC & 15);
+   Sentence[Count++] = Hex((uiCRC >> 12) & 15);
+   Sentence[Count++] = Hex((uiCRC >> 8) & 15);
+   Sentence[Count++] = Hex((uiCRC >> 4) & 15);
+   Sentence[Count++] = Hex(uiCRC & 15);
    Sentence[Count++] = '\n';  
    Sentence[Count++] = '\0';
 }

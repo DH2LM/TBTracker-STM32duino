@@ -78,16 +78,16 @@ static void processGPSData()
 /*********************************************************************************************************************************/
 void printGPSData()
 {
-  String str;
-  Serial.print(F("Time: ")); Serial.print(UGPS.Hours); Serial.print(":"); Serial.print(UGPS.Minutes); Serial.print(":"); Serial.println(UGPS.Seconds);
-  Serial.print(F(" Lat: ")); Serial.print(UGPS.Latitude, 6);
-  str = getAPRSlat(UGPS.Latitude); Serial.print("  ("); Serial.print(str); Serial.println(")");
-  Serial.print(F(" Lon: ")); Serial.print(UGPS.Longitude, 6);
-  str = getAPRSlon(UGPS.Longitude); Serial.print("  ("); Serial.print(str); Serial.println(")");
-  Serial.print(F(" Alt: ")); Serial.print(UGPS.Altitude);
-  str = getAPRSAlt(UGPS.Altitude); Serial.print("  ("); Serial.print(str); Serial.println(")");
-  Serial.print(F("Sats: ")); Serial.println(UGPS.Satellites);
-  Serial.println("------"); 
+  // String str;
+  // SerialDebug.print(F("Time: ")); // SerialDebug.print(UGPS.Hours); // SerialDebug.print(":"); // SerialDebug.print(UGPS.Minutes); // SerialDebug.print(":"); // SerialDebug.println(UGPS.Seconds);
+  // SerialDebug.print(F(" Lat: ")); // SerialDebug.print(UGPS.Latitude, 6);
+  // str = getAPRSlat(UGPS.Latitude); // SerialDebug.print("  ("); // SerialDebug.print(str); // SerialDebug.println(")");
+  // SerialDebug.print(F(" Lon: ")); // SerialDebug.print(UGPS.Longitude, 6);
+  // str = getAPRSlon(UGPS.Longitude); // SerialDebug.print("  ("); // SerialDebug.print(str); // SerialDebug.println(")");
+  // SerialDebug.print(F(" Alt: ")); // SerialDebug.print(UGPS.Altitude);
+  // str = getAPRSAlt(UGPS.Altitude); // SerialDebug.print("  ("); // SerialDebug.print(str); // SerialDebug.println(")");
+  // SerialDebug.print(F("Sats: ")); // SerialDebug.println(UGPS.Satellites);
+  // SerialDebug.println("------"); 
 }
 
 

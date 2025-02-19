@@ -8,9 +8,10 @@
 
 #include "Settings.h"
 #include <SPI.h>
-#include "esp32-hal-cpu.h"
+// #include "esp32-hal-cpu.h"
 #include <RadioLib.h>
 #include "horus_l2.h"
+#include <SoftwareSerial.h>
 
 #define TBTRACKER_VERSION v0.1.1
 
@@ -121,7 +122,10 @@ char debugbuffer[256]; // Buffer to store debug strings
 *  
 * Normally no change necessary
 ************************************************************************************/
-HardwareSerial SerialGPS(1);
+// HardwareSerial SerialGPS(Rx, Tx);
+SoftwareSerial SerialGPS(Rx, Tx);
+// SoftwareSerial SerialDebug(PA15, PA13);
+// SPIClass radioSPI(MOSI, MISO, SCK, CS);
 char Sentence[SENTENCE_LENGTH];
 long RTTYCounter=1;
 long LoRaCounter=1;
@@ -132,6 +136,7 @@ unsigned long previousTX_RTTY = 0;
 unsigned long previousTX_HorusV1 = 0;
 unsigned long previousTX_HorusV2 = 0;
 unsigned long previousTX_LoRa_APRS = 0;
+bool disableLEDs;
 
 //*********************************************************************************************************************
 // Generate a Horus Binary v1 packet, and populate it with data.
@@ -194,20 +199,45 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
 //============================================================================
 void setup()
 {
+    disableLEDs = false;
+  pinMode(LED_GRN, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_GPS, OUTPUT);
+
+  digitalWrite(LED_GRN, HIGH);
+  digitalWrite(LED_RED, HIGH);
+  digitalWrite(LED_GPS, HIGH);
+
+  delay(100);
   // SEt CPU speed to 80MHz to spare energy
-  setCpuFrequencyMhz(80);
+  // setCpuFrequencyMhz(80);
+    // Setup Serial for debugging
+  SerialGPS.begin(GPSBaud);
+  // SerialDebug.begin(9600);
+    // Setup the GPS
+  // SerialGPS.begin(GPSBaud, SERIAL_8N1);  //TX, RX
+  delay(100);
 
-  // Setup Serial for debugging
-  Serial.begin(115200);
-  
-  SPI.begin(SCK,MISO,MOSI,CS);
+  digitalWrite(LED_RED, LOW);
+  delay(250);
 
-  // Setup the GPS
-  SerialGPS.begin(GPSBaud, SERIAL_8N1, Tx, Rx);  //TX, RX
-  
-  // Setup the Radio
+    // SPI.begin(SCK,MISO,MOSI,CS);
+  SPI.setMISO(MISO);
+  SPI.setMOSI(MOSI);
+  // SPI.setSSEL(CS);
+  SPI.setSCLK(SCK);
+  SPI.begin();
+
+  digitalWrite(LED_GRN, LOW);
+
+    // Setup the Radio
   ResetRadio();
   SetupRadio();  
+
+  digitalWrite(LED_GRN, HIGH);
+
+  ReadVCC();
+  // delay(500);
 }
 
 
@@ -218,22 +248,34 @@ void loop()
 
      // Get data from the GPS
      smartDelay(1000);   
-     CheckGPS(); 
+     CheckGPS();
      
+     if(UGPS.Altitude > ALT_DISABLE_LEDs)
+     {
+        digitalWrite(LED_GPS, LOW);
+        digitalWrite(LED_GRN, LOW);
+        digitalWrite(LED_RED, LOW);
+        disableLEDs = true;
+     }
+     else disableLEDs = false;
+
        // Send RTTY
        if ((RTTY_ENABLED) && (currentMillis - previousTX_RTTY >= ((unsigned long)RTTY_LOOPTIME*(unsigned long)1000)))
        { 
+          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
           for (int i=1; i <= RTTY_REPEATS; i++)
           {
             CreateTXLine(RTTY_PAYLOAD_ID, RTTYCounter++, RTTY_PREFIX);
             sendRTTY(Sentence); 
           }
           previousTX_RTTY = currentMillis;
+          digitalWrite(LED_GRN, LOW);
        }
      
        // Send LoRa 
        if ((LORA_ENABLED) && (currentMillis - previousTX_LoRa >= ((unsigned long)LORA_LOOPTIME*(unsigned long)1000)))
        { 
+          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
           delay(1000);
           for (int i=1; i <= LORA_REPEATS; i++)
           {
@@ -241,29 +283,36 @@ void loop()
             sendLoRa(Sentence,LORA_MODE); 
           }
           previousTX_LoRa = currentMillis;
+          digitalWrite(LED_GRN, LOW);
        }
 
        // Send HORUS V1
        if ((HORUS_V1_ENABLED) && (currentMillis - previousTX_HorusV1 >= ((unsigned long)HORUS_LOOPTIME*(unsigned long)1000)))
        {
+          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
           delay(1000);
           sendHorusV1();
           previousTX_HorusV1 = currentMillis;
+          digitalWrite(LED_GRN, LOW);
        }
 
        // Send HORUS V2
        if ((HORUS_V2_ENABLED) && (currentMillis - previousTX_HorusV2 >= ((unsigned long)HORUS_LOOPTIME*(unsigned long)1000)))
        {
+          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
           delay(1000);  
           sendHorusV2();
           previousTX_HorusV2 = currentMillis;
+          digitalWrite(LED_GRN, LOW);
        }
 
        // Send LORA-APRS
        if ((LORA_APRS_ENABLED) && (currentMillis - previousTX_LoRa_APRS >= ((unsigned long)LORA_APRS_LOOPTIME*(unsigned long)1000)))
        {
+          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
          delay(1000);
          sendLoRaAprs();
          previousTX_LoRa_APRS = currentMillis;
+         digitalWrite(LED_GRN, LOW);
        }
 }

@@ -1,5 +1,6 @@
 // include the library
 #include <RadioLib.h>
+#include "cw.h"
 
 #define PACKETLEN 255
 
@@ -17,7 +18,7 @@ void SetupRTTY()
   // First setup FSK
   SetupFSK();
 
-  Serial.print(F("RTTY init.."));
+  // SerialDebug.print(F("RTTY init.."));
 
   int16_t state = rtty.begin(RTTYSettings.Frequency,
                      RTTYSettings.Shift,
@@ -27,38 +28,50 @@ void SetupRTTY()
                      
   if(state == RADIOLIB_ERR_NONE) // Change this to (state == ERR_NONE) if you use an older radiolib library
   {
-
-    Serial.println(F("done"));
+    digitalWrite(LED_GRN, HIGH);
+    // SerialDebug.println(F("done"));
   } else 
   {
-
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while(true);
+    digitalWrite(LED_RED, HIGH);
+    // SerialDebug.print(F("failed, code "));
+    // SerialDebug.println(state);
+    while(true)
+    {
+      giveS();
+      delay(250);
+      giveR();
+      delay(700);
+    }
   }
 }
 
 //===============================================================================
 void SetupHorus()
 {
-  Serial.println();
-  Serial.print("Setting up radio for Horus...");
+  // SerialDebug.println();
+  // SerialDebug.print("Setting up radio for Horus...");
   // Initialize the radio in FSK mode
   int16_t state = radio.beginFSK();
   // Only continue if there is no error state
   if(state == RADIOLIB_ERR_NONE) 
   {
-    Serial.println(F("success!"));
+    digitalWrite(LED_GRN, HIGH);
+    // SerialDebug.println(F("success!"));
   } else 
   {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while(true);
+    digitalWrite(LED_RED, HIGH);
+    // SerialDebug.print(F("failed, code "));
+    // SerialDebug.println(state);
+    while(true)
+    {
+      giveH();
+      delay(700);
+    }
   }
 
   state = radio.setOutputPower(HORUS_POWER);
 
-  Serial.print(F("[FSK4] Initializing ... ")); 
+  // SerialDebug.print(F("[FSK4] Initializing ... ")); 
 
   // initialize FSK4 transmitter
   // NOTE: FSK4 frequency shift will be rounded
@@ -75,12 +88,20 @@ void SetupHorus()
 
   if(state == RADIOLIB_ERR_NONE) 
   {
-    Serial.println(F("success!"));
+    digitalWrite(LED_GRN, HIGH);
+    // SerialDebug.println(F("success!"));
   } else 
   {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while(true);
+    digitalWrite(LED_RED, HIGH);
+    // SerialDebug.print(F("failed, code "));
+    // SerialDebug.println(state);
+    while(true)
+    {
+      give4();
+      delay(250);
+      giveF();
+      delay(700);
+    }
   }
 }
 
@@ -88,7 +109,7 @@ void SetupHorus()
 void SetupFSK()
 {
   // Initialize the SX1278
-  Serial.print(F("[SX1278] init.."));
+  // SerialDebug.print(F("[SX1278] init.."));
 
  // int16_t state = radio.beginFSK();
  
@@ -103,13 +124,19 @@ void SetupFSK()
 
   if(state == RADIOLIB_ERR_NONE) // Change this to (state == ERR_NONE) if you use an older radiolib library
   {
-    Serial.println(F("done"));
+    digitalWrite(LED_GRN, HIGH);
+    // SerialDebug.println(F("done"));
   } 
   else 
   {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while(true);
+    digitalWrite(LED_RED, HIGH);
+    // SerialDebug.print(F("failed, code "));
+    // SerialDebug.println(state);
+    while(true)
+    {
+      giveF();
+      delay(700);
+    }
   }
 }
 
@@ -118,7 +145,7 @@ void SetupFSK()
 void SetupLoRa(int aMode)
 {
   // Initialize the SX1278
-  Serial.print(F("[LoRA] Initializing ... "));
+  // SerialDebug.print(F("[LoRA] Initializing ... "));
 
   ResetRadio(); 
 
@@ -230,13 +257,19 @@ void SetupLoRa(int aMode)
   
   if(state == RADIOLIB_ERR_NONE) // Change this to (state == ERR_NONE) if you use an older radiolib library
   {
-    Serial.println(F("done"));
+    digitalWrite(LED_GRN, HIGH);
+    // SerialDebug.println(F("done"));
   } 
   else 
   {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
-    while(true);
+    digitalWrite(LED_RED, HIGH);
+    // SerialDebug.print(F("failed, code "));
+    // SerialDebug.println(state);
+    while(true)
+    {
+      giveL();
+      delay(700);
+    }
   }
 }
 
@@ -262,8 +295,8 @@ void sendRTTY(String TxLine)
    delay(RTTY_IDLE_TIME);
 
    // Send the string 
-   Serial.print(F("Send RTTY: "));
-   Serial.println(TxLine);
+   // SerialDebug.print(F("Send RTTY: "));
+   // SerialDebug.println(TxLine);
 
    int state = rtty.println(TxLine); 
    rtty.standby();   
@@ -289,7 +322,7 @@ void sendLoRa(String TxLine, int aMode)
    int state;
 
    SetupLoRa(aMode);
-   Serial.println(TxLine);
+   // SerialDebug.println(TxLine);
 
   switch (LORA_MODE)
   {
@@ -310,11 +343,20 @@ void sendLoRa(String TxLine, int aMode)
 
   if(state == RADIOLIB_ERR_NONE) // Change this to (state == ERR_NONE) if you use an older radiolib library
   {
-    Serial.println(F("done"));
+    digitalWrite(LED_GRN, HIGH);
+    // SerialDebug.println(F("done"));
   } else 
   {
-    Serial.print(F("failed, code "));
-    Serial.println(state);
+    digitalWrite(LED_RED, HIGH);
+    // SerialDebug.print(F("failed, code "));
+    // SerialDebug.println(state);
+    while(true)
+    {
+      giveS();
+      delay(250);
+      giveL();
+      delay(700);
+    }
   } 
 }
 
@@ -328,32 +370,32 @@ void sendHorusV1()
   SetupHorus();
 
   // Start Horus Binary V1
-  Serial.println(F("Generating Horus Binary v1 Packet"));
+  // SerialDebug.println(F("Generating Horus Binary v1 Packet"));
 
  // Generate packet for V1
   pkt_len = build_horus_binary_packet_v1(rawbuffer);
   PrintHex(rawbuffer, pkt_len, debugbuffer);
-  Serial.print(F("Uncoded Length (bytes): "));
-  Serial.println(pkt_len);
-  Serial.print(F("Uncoded: ")); 
-  Serial.println(debugbuffer);
+  // SerialDebug.print(F("Uncoded Length (bytes): "));
+  // SerialDebug.println(pkt_len);
+  // SerialDebug.print(F("Uncoded: ")); 
+  // SerialDebug.println(debugbuffer);
 
  // Apply Encoding
   coded_len = horus_l2_encode_tx_packet((unsigned char*)codedbuffer,(unsigned char*)rawbuffer,pkt_len);
   PrintHex(codedbuffer, coded_len, debugbuffer);
-  Serial.print(F("Encoded Length (bytes): "));
-  Serial.println(coded_len);
-  Serial.print(F("Coded: "));
-  Serial.println(debugbuffer);
+  // SerialDebug.print(F("Encoded Length (bytes): "));
+  // SerialDebug.println(coded_len);
+  // SerialDebug.print(F("Coded: "));
+  // SerialDebug.println(debugbuffer);
 
   // Transmit!
-  Serial.println(F("Transmitting Horus Binary v1 Packet"));
+  // SerialDebug.println(F("Transmitting Horus Binary v1 Packet"));
   // send out idle condition for 1000 ms
   fsk4_idle(&radio);
   delay(1000);
   fsk4_preamble(&radio, 8);
   fsk4_write(&radio, codedbuffer, coded_len);
-  Serial.println();
+  // SerialDebug.println();
 }
 
 //===============================================================================
@@ -366,26 +408,26 @@ void sendHorusV2()
   SetupHorus();
 
      // Start Horus Binary V1
-  Serial.println(F("Generating Horus Binary v2 Packet"));
+  // SerialDebug.println(F("Generating Horus Binary v2 Packet"));
 
   // Generate packet for V1
   pkt_len = build_horus_binary_packet_v2(rawbuffer);
   PrintHex(rawbuffer, pkt_len, debugbuffer);
-  Serial.print(F("Uncoded Length (bytes): "));
-  Serial.println(pkt_len);
-  Serial.print(F("Uncoded: ")); 
-  Serial.println(debugbuffer);
+  // SerialDebug.print(F("Uncoded Length (bytes): "));
+  // SerialDebug.println(pkt_len);
+  // SerialDebug.print(F("Uncoded: ")); 
+  // SerialDebug.println(debugbuffer);
 
   // Apply Encoding
   coded_len = horus_l2_encode_tx_packet((unsigned char*)codedbuffer,(unsigned char*)rawbuffer,pkt_len);
   PrintHex(codedbuffer, coded_len, debugbuffer);
-  Serial.print(F("Encoded Length (bytes): "));
-  Serial.println(coded_len);
-  Serial.print("Coded: ");
-  Serial.println(debugbuffer);
+  // SerialDebug.print(F("Encoded Length (bytes): "));
+  // SerialDebug.println(coded_len);
+  // SerialDebug.print("Coded: ");
+  // SerialDebug.println(debugbuffer);
   
   // Transmit!
-  Serial.println(F("Transmitting Horus Binary v2 Packet"));
+  // SerialDebug.println(F("Transmitting Horus Binary v2 Packet"));
 
   // send out idle condition for 1000 ms
   fsk4_idle(&radio);
@@ -432,7 +474,7 @@ void sendLoRaAprs()
    // Add a meesage
    aprs_packet += " LoRa-APRS HAB-NL";
 
-   Serial.println("Sending LoRa APRS packet...");
+   // SerialDebug.println("Sending LoRa APRS packet...");
    sendLoRa(aprs_packet,LORA_APRS_MODE);
 
 }

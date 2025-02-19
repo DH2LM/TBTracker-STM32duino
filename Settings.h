@@ -14,15 +14,21 @@
 * #define MOSI 35
 * #define CS 34
 ************************************************************************************/
-#define SCK 36
-#define MISO 37
-#define MOSI 35
-#define CS 34
+#define LED_GPS PC15
+#define LED_RED PB6
+#define LED_GRN PA11
+#define BAT_ADC PA12
+#define ALT_DISABLE_LEDs 1500
 
-#define PIN_NSS   18
-#define PIN_DIO0  26
+#define SCK PA5
+#define MISO PA6
+#define MOSI PA2
+#define CS PA4
+
+#define PIN_NSS   PA4
+#define PIN_DIO0  PA7
 #define PIN_BUSY  -1  // Not used in this sketch for sx1278
-#define PIN_RESET 23  
+#define PIN_RESET  PA3
 #define PIN_DIO1  -1  // Not used in this sketch for sx1278
 
 /***********************************************************************************
@@ -33,7 +39,7 @@
 #define RTTY_ENABLED false      // Set to true if you want RTTY transmissions
 #define LORA_ENABLED false      // Set to true if you want LoRa transmissions
 #define HORUS_V1_ENABLED false  // Set to true if you want HorusBinary V1 transmissions
-#define HORUS_V2_ENABLED false  // Set to true if you want HorusBinary V2 transmissions
+#define HORUS_V2_ENABLED true  // Set to true if you want HorusBinary V2 transmissions
 #define LORA_APRS_ENABLED false  // Set to true if you want LORA-APRS transmissions (experimental)
 
 /***********************************************************************************
@@ -42,8 +48,8 @@
 * Personalize when you have RTTY_ENABLED set to true and you want RTTY transmissions
 * Default RTTY setting is: 7,N,2 at 100 Baud.
 ************************************************************************************/
-#define RTTY_PAYLOAD_ID  "MYCALL" // This will show on Sondehub. Payload ID for RTTY protocol. CHANGE THIS!
-#define RTTY_FREQUENCY  433.775    // in MHz
+#define RTTY_PAYLOAD_ID  "DH2LM" // This will show on Sondehub. Payload ID for RTTY protocol. CHANGE THIS!
+#define RTTY_FREQUENCY  434.4    // in MHz
 #define RTTY_SHIFT 610             // in increments of 61. 610 is usually a good value.
 #define RTTY_BAUD 100              // Baud rate. You should set this to 50 or 100 usually
 #define RTTY_STOPBITS 2            // Usually leave this at 2 
@@ -70,7 +76,7 @@
 * 8 = (SSDV repeater,          4500 baud)  Explicit mode, Error coding 4:5, Bandwidth 62.5kHz, SF 6, Low data rate optimize off - SUPPORTED
 * 99 = (World wide LoRa-APRS mode at 433.775MHz, Explicit mode, Error coding 4:5, Bandwidth 125kHz, SF 12,Low data rate optimize off - SUPPORTED  )
 ************************************************************************************/
-#define LORA_PAYLOAD_ID  "MYCALL"  // This will show on Sondehub. Payload ID for LoRa protocol. CHANGE THIS!
+#define LORA_PAYLOAD_ID  "DH2LM"  // This will show on Sondehub. Payload ID for LoRa protocol. CHANGE THIS!
 #define LORA_FREQUENCY  432.662     // in MHz
 #define LORA_MODE 2                 // Mode 2 is usually used for simple telemetry data
 #define LORA_REPEATS 1              // number of LoRa transmits during a cycle
@@ -81,7 +87,7 @@
 *  
 * Personalize when you have LORA_APRS_ENABLED set to true and you want LORA-APRS transmissions
 ************************************************************************************/
-#define LORA_APRS_PAYLOAD_ID  "MYCALL"  // CHANGE THIS. This will show on Sondehub. For LORA-APRS this should be a HAM call without SSID.
+#define LORA_APRS_PAYLOAD_ID  "DH2LM"  // CHANGE THIS. This will show on Sondehub. For LORA-APRS this should be a HAM call without SSID.
 #define LORA_APRS_SSID "-11"            // 11 is the symbol for balloon
 #define LORA_APRS_MODE 99                     
 #define LORA_APRS_FREQUENCY  433.775  // LORA-APRS is worldwide on 433.775 MHz, do not change
@@ -102,8 +108,8 @@
 //#define PAYLOAD_ID_V2   256
 //**********************************************************************************
 #define PAYLOAD_ID_V1  0
-#define PAYLOAD_ID_V2   256
-#define HORUS_FREQUENCY 433.415
+#define PAYLOAD_ID_V2   703
+#define HORUS_FREQUENCY 434.7144
 #define HORUS_POWER        10   // In dBm. Valid values +2 to +17 dBm. 10dBm = 10mW, 13dBm=20mW
 #define HORUS_BAUD         100  // recommended 50 (8MHz processor) or 100 baud (16MHz or better processor)
 #define HORUS_SPACING      270  // NOTE: This results in a shift of 244 Hz due to the PLL Resolution of the SX127x which is 61Hz
@@ -115,8 +121,8 @@
 * Change if needed
 ************************************************************************************/
 // GPS Serial device
-static const int Rx = 15, Tx = 12;  // This will probably be different for your board
-static const uint32_t GPSBaud = 9600;
+static const int Rx = PA1, Tx = PA0;  // This will probably be different for your board
+static const uint32_t GPSBaud = 38400;
 
 /***********************************************************************************
 * TRANSMISSIONS SETTINGS
