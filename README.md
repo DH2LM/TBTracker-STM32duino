@@ -58,6 +58,7 @@ V0.1.1:
 - Added a timestamp to to the APRS packets for better compatibility with Sondehub
 
 # TO DO:
+- [ ] Make the balloon PCB available for those who want to build their own
 - [X] Get the code running on STM32
 - [X] Get Radio running
 - [X] Get GPS running
