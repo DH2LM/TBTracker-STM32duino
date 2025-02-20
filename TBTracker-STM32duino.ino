@@ -12,6 +12,9 @@
 #include <RadioLib.h>
 #include "horus_l2.h"
 #include <SoftwareSerial.h>
+#ifdef USE_BME280
+#include <Wire.h>
+#endif
 
 #define TBTRACKER_VERSION v0.1.1
 
@@ -26,6 +29,7 @@ struct TGPS
   int Hours, Minutes, Seconds, Day;
   float Longitude, Latitude;
   long Altitude;
+  long RawTime;
   unsigned int Satellites;
   byte FlightMode;
   unsigned int Heading;
@@ -137,6 +141,8 @@ unsigned long previousTX_HorusV1 = 0;
 unsigned long previousTX_HorusV2 = 0;
 unsigned long previousTX_LoRa_APRS = 0;
 bool disableLEDs;
+uint32_t prevTime = 1;
+uint32_t prevHeight = 0;
 
 //*********************************************************************************************************************
 // Generate a Horus Binary v1 packet, and populate it with data.
@@ -170,6 +176,20 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
 {
   struct HorusBinaryPacketV2 BinaryPacketV2;
 
+  //calculate voltage
+  float fVoltage = ReadVCC();
+
+  uint8_t ui8Voltage = round( fVoltage * (255.0 / 5.0) );
+
+  //calculate ascent rate
+  // long curHeight = UGPS.Altitude;
+  // long curTime = UGPS.RawTime;
+  // float ascRate = ((float)curHeight - (float)prevHeight) / ((float)curTime - (float)prevTime);
+  // int16_t iAscRate = ascRate * 100.0;
+
+  // // uint8_t rawTemp = getRadioTemp();
+  // // int8_t iRawTemp = rawTemp;
+
   BinaryPacketV2.PayloadID   = PAYLOAD_ID_V2; 
   BinaryPacketV2.Counter     = horusCounterV2++;
   BinaryPacketV2.Hours       = UGPS.Hours;
@@ -179,15 +199,21 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
   BinaryPacketV2.Longitude   = UGPS.Longitude;
   BinaryPacketV2.Altitude    = UGPS.Altitude;
   BinaryPacketV2.Speed       = 0;
-  BinaryPacketV2.BattVoltage = 0;
+  BinaryPacketV2.BattVoltage = ui8Voltage;
   BinaryPacketV2.Sats        = UGPS.Satellites;
   BinaryPacketV2.Temp        = 0;
   // Custom section. This is an example only, and the 9 bytes in this section can be used in other
   // ways. Refer here for details: https://github.com/projecthorus/horusdemodlib/wiki/5-Customising-a-Horus-Binary-v2-Packet
-  BinaryPacketV2.dummy1      = 200;  // int16_t Interpreted as Ascent rate divided by 100 for 4FSKTEST-V2. This value would display as 2.0 on HabHub 
-  BinaryPacketV2.dummy2      = -20;  // int16_t External temperature divided by 10 for 4FSKTEST-V2. This value would display as -2.0 on HabHub   
-  BinaryPacketV2.dummy3      = 51;   // uint8_t External humidity for 4FSKTEST-V2. This value would display as 51 on HabHub  
-  BinaryPacketV2.dummy4      = 21;   // uint16_t External pressure divided by 10 for 4FSKTEST-V2. This value would display as 2.1 on HabHub  
+  // BinaryPacketV2.dummy1      = 200;  // int16_t Interpreted as Ascent rate divided by 100 for 4FSKTEST-V2. This value would display as 2.0 on HabHub 
+  // BinaryPacketV2.dummy2      = -20;  // int16_t External temperature divided by 10 for 4FSKTEST-V2. This value would display as -2.0 on HabHub   
+  // BinaryPacketV2.dummy3      = 51;   // uint8_t External humidity for 4FSKTEST-V2. This value would display as 51 on HabHub  
+  // BinaryPacketV2.dummy4      = 21;   // uint16_t External pressure divided by 10 for 4FSKTEST-V2. This value would display as 2.1 on HabHub  
+  // BinaryPacketV2.unused      = 0;    // Two unused filler bytes
+  
+  BinaryPacketV2.dummy1      = 0;  // int16_t Interpreted as Ascent rate divided by 100 for 4FSKTEST-V2. This value would display as 2.0 on HabHub 
+  BinaryPacketV2.dummy2      = 0;  // int16_t External temperature divided by 10 for 4FSKTEST-V2. This value would display as -2.0 on HabHub   
+  BinaryPacketV2.dummy3      = 0;   // uint8_t External humidity for 4FSKTEST-V2. This value would display as 51 on HabHub  
+  BinaryPacketV2.dummy4      = 0;   // uint16_t External pressure divided by 10 for 4FSKTEST-V2. This value would display as 2.1 on HabHub  
   BinaryPacketV2.unused      = 0;    // Two unused filler bytes
   BinaryPacketV2.Checksum    = (uint16_t)crc16((unsigned char*)&BinaryPacketV2,sizeof(BinaryPacketV2)-2);
 
@@ -233,10 +259,13 @@ void setup()
     // Setup the Radio
   ResetRadio();
   SetupRadio();  
+  SetupBME280();
 
   digitalWrite(LED_GRN, HIGH);
 
   ReadVCC();
+  // float ftemp = getInternalTemp();
+  
   // delay(500);
 }
 

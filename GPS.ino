@@ -41,6 +41,7 @@ static void processGPSData()
     UGPS.Minutes = gps.time.minute();
     UGPS.Seconds = gps.time.second();
     UGPS.Day = gps.date.day();
+    UGPS.RawTime = gps.time.value();
  }
  else
  {

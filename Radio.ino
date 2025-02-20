@@ -472,7 +472,12 @@ void sendLoRaAprs()
    // Add the altitude
    aprs_packet += getAPRSAlt(UGPS.Altitude);
    // Add a meesage
-   aprs_packet += " LoRa-APRS HAB-NL";
+   aprs_packet += " HAB LoRa APRS https://github.com/dh2lm/tbtracker-stm32duino U=";
+
+   // Add voltage
+   float fVoltage = ReadVCC();
+   aprs_packet += String(fVoltage, 2);
+   aprs_packet += "V";
 
    // SerialDebug.println("Sending LoRa APRS packet...");
    sendLoRa(aprs_packet,LORA_APRS_MODE);
