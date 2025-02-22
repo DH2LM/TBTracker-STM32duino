@@ -17,7 +17,6 @@
 #define LED_GPS PC15
 #define LED_RED PB6
 #define LED_GRN PA11
-#define BAT_ADC PA12
 #define ALT_DISABLE_LEDs 1500
 
 // #define USE_BME280
@@ -28,6 +27,8 @@
 #define MISO PA6
 #define MOSI PA2
 #define CS PA4
+
+#define BAT_ADC PA12
 
 #define PIN_NSS   PA4
 #define PIN_DIO0  PA7
@@ -45,6 +46,7 @@
 #define HORUS_V1_ENABLED false  // Set to true if you want HorusBinary V1 transmissions
 #define HORUS_V2_ENABLED true  // Set to true if you want HorusBinary V2 transmissions
 #define LORA_APRS_ENABLED true  // Set to true if you want LORA-APRS transmissions (experimental)
+#define LORA_APRS_TELEM_ENABLED true //Set to true if you want LORA-APRS transmit telemetry data
 
 /***********************************************************************************
 * RTTY SETTINGS
@@ -117,7 +119,7 @@
 #define HORUS_POWER        10   // In dBm. Valid values +2 to +17 dBm. 10dBm = 10mW, 13dBm=20mW
 #define HORUS_BAUD         100  // recommended 50 (8MHz processor) or 100 baud (16MHz or better processor)
 #define HORUS_SPACING      270  // NOTE: This results in a shift of 244 Hz due to the PLL Resolution of the SX127x which is 61Hz
-#define HORUS_LOOPTIME     45   // Transmit Horus every xx seconds
+#define HORUS_LOOPTIME     90   // Transmit Horus every xx seconds
 
 /***********************************************************************************
 * GPS SETTINGS

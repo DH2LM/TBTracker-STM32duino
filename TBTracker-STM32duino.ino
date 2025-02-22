@@ -26,10 +26,12 @@
 // Struct to hold GPS data
 struct TGPS
 {
-  int Hours, Minutes, Seconds, Day;
+  int Hours, Minutes, Seconds, Day, Month, Year;
   float Longitude, Latitude;
   long Altitude;
-  long RawTime;
+  uint32_t RawTime;
+  float Climb;
+  float Speed;
   unsigned int Satellites;
   byte FlightMode;
   unsigned int Heading;
@@ -182,13 +184,22 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
   uint8_t ui8Voltage = round( fVoltage * (255.0 / 5.0) );
 
   //calculate ascent rate
-  // long curHeight = UGPS.Altitude;
-  // long curTime = UGPS.RawTime;
-  // float ascRate = ((float)curHeight - (float)prevHeight) / ((float)curTime - (float)prevTime);
-  // int16_t iAscRate = ascRate * 100.0;
+  int16_t iAscRate = round(UGPS.Climb * 100.0);
 
-  // // uint8_t rawTemp = getRadioTemp();
-  // // int8_t iRawTemp = rawTemp;
+  //calculate speed
+  float speedKph = UGPS.Speed;
+  uint8_t ui8speed = 0;
+  if(speedKph < 0) ui8speed = 0;
+  else if(speedKph > 255) ui8speed = 255;
+  else ui8speed = round(speedKph);
+
+  //calculate voltage
+  int32_t i32vrefVal = readVref();
+  int32_t i32tempVal = readTempSensor(i32vrefVal);
+  int8_t i8tempVal;
+  if(i32tempVal < -128) i8tempVal = -128;
+  else if(i32tempVal > 127) i8tempVal = 127;
+  else i8tempVal = i32tempVal;
 
   BinaryPacketV2.PayloadID   = PAYLOAD_ID_V2; 
   BinaryPacketV2.Counter     = horusCounterV2++;
@@ -198,10 +209,10 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
   BinaryPacketV2.Latitude    = UGPS.Latitude;
   BinaryPacketV2.Longitude   = UGPS.Longitude;
   BinaryPacketV2.Altitude    = UGPS.Altitude;
-  BinaryPacketV2.Speed       = 0;
+  BinaryPacketV2.Speed       = ui8speed;
   BinaryPacketV2.BattVoltage = ui8Voltage;
   BinaryPacketV2.Sats        = UGPS.Satellites;
-  BinaryPacketV2.Temp        = 0;
+  BinaryPacketV2.Temp        = i8tempVal;
   // Custom section. This is an example only, and the 9 bytes in this section can be used in other
   // ways. Refer here for details: https://github.com/projecthorus/horusdemodlib/wiki/5-Customising-a-Horus-Binary-v2-Packet
   // BinaryPacketV2.dummy1      = 200;  // int16_t Interpreted as Ascent rate divided by 100 for 4FSKTEST-V2. This value would display as 2.0 on HabHub 
@@ -210,7 +221,7 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
   // BinaryPacketV2.dummy4      = 21;   // uint16_t External pressure divided by 10 for 4FSKTEST-V2. This value would display as 2.1 on HabHub  
   // BinaryPacketV2.unused      = 0;    // Two unused filler bytes
   
-  BinaryPacketV2.dummy1      = 0;  // int16_t Interpreted as Ascent rate divided by 100 for 4FSKTEST-V2. This value would display as 2.0 on HabHub 
+  BinaryPacketV2.dummy1      = iAscRate;  // int16_t Interpreted as Ascent rate divided by 100 for 4FSKTEST-V2. This value would display as 2.0 on HabHub 
   BinaryPacketV2.dummy2      = 0;  // int16_t External temperature divided by 10 for 4FSKTEST-V2. This value would display as -2.0 on HabHub   
   BinaryPacketV2.dummy3      = 0;   // uint8_t External humidity for 4FSKTEST-V2. This value would display as 51 on HabHub  
   BinaryPacketV2.dummy4      = 0;   // uint16_t External pressure divided by 10 for 4FSKTEST-V2. This value would display as 2.1 on HabHub  
@@ -263,10 +274,10 @@ void setup()
 
   digitalWrite(LED_GRN, HIGH);
 
-  ReadVCC();
+  analogReadResolution(12);
   // float ftemp = getInternalTemp();
-  
   // delay(500);
+  digitalWrite(LED_GRN, LOW);
 }
 
 

@@ -65,5 +65,6 @@ V0.1.1:
 - [ ] Add documentation on how to get the STM32 Programmer running
 - [ ] Implement code for BME280 sensor
 - [X] Implement code for reading battery voltage from ADC and convert the ADC value into the voltage
-- [ ] Add functionality for Horus to report climbing speed, travel speed, temperature
-
+- [X] Add functionality for Horus to report climbing speed, travel speed, temperature
+- [X] Implement LoRa APRS Telemetry
+- [ ] Fix LoRa APRS Climbing speed, it is buggy at the moment. Somehow it works in Horus though

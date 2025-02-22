@@ -1,8 +1,13 @@
 #include <TinyGPS++.h>
+#include <TimeLib.h>
 
 
 // The TinyGPS++ object
 TinyGPSPlus gps;
+float olon = 0.0;
+float olat = 0.0; 
+uint64_t otime = 1;
+uint32_t oalt = 0;
 
 /*********************************************************************************************************************************/
 void CheckGPS()
@@ -41,7 +46,10 @@ static void processGPSData()
     UGPS.Minutes = gps.time.minute();
     UGPS.Seconds = gps.time.second();
     UGPS.Day = gps.date.day();
+    UGPS.Month = gps.date.month();
+    UGPS.Year = gps.date.year();
     UGPS.RawTime = gps.time.value();
+    setTime(UGPS.Hours, UGPS.Minutes, UGPS.Seconds, UGPS.Day, UGPS.Month, UGPS.Year);
  }
  else
  {
@@ -49,6 +57,8 @@ static void processGPSData()
     UGPS.Minutes = 0;
     UGPS.Seconds = 0;
     UGPS.Day = 0;
+    UGPS.Month = 0;
+    UGPS.Year = 0;
  }
 
  // Position
@@ -65,6 +75,11 @@ static void processGPSData()
    UGPS.Heading = 0;
  }
 
+ if(gps.speed.isValid())
+ {
+   UGPS.Speed = gps.speed.kmph();
+ }
+
  // Altitude
  if (gps.altitude.isValid())
     UGPS.Altitude = gps.altitude.meters();
@@ -73,6 +88,19 @@ static void processGPSData()
 
  if (UGPS.Altitude < 0)
    UGPS.Altitude = 0;    
+
+ if(gps.time.isValid())
+ {
+    if(gps.altitude.isValid())
+    {
+      uint64_t ntime = now();
+      UGPS.Climb = (float)( UGPS.Altitude - oalt ) / (float)( ntime - otime );
+      oalt = UGPS.Altitude;
+    }
+
+    otime = now();
+
+ }
    
 }
 
