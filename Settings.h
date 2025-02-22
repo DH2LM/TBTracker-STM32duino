@@ -1,6 +1,5 @@
 /***********************************************************************************
 * Important: CHANGE THE SETTINGS BELOW so it matches your configuration
-*
 ************************************************************************************/
 
 /***********************************************************************************
@@ -42,7 +41,8 @@
 * See below for the settings for the different protocols
 ************************************************************************************/
 #define RTTY_ENABLED false      // Set to true if you want RTTY transmissions
-#define LORA_ENABLED false      // Set to true if you want LoRa transmissions
+#define LORA_ENABLED true       // Set to true if you want LoRa transmissions
+#define RECEIVING_ENABLED false // Set to true if you want the Tracker to listen on the LoRa frequency for incoming packets
 #define HORUS_V1_ENABLED false  // Set to true if you want HorusBinary V1 transmissions
 #define HORUS_V2_ENABLED true  // Set to true if you want HorusBinary V2 transmissions
 #define LORA_APRS_ENABLED true  // Set to true if you want LORA-APRS transmissions (experimental)
@@ -82,11 +82,11 @@
 * 8 = (SSDV repeater,          4500 baud)  Explicit mode, Error coding 4:5, Bandwidth 62.5kHz, SF 6, Low data rate optimize off - SUPPORTED
 * 99 = (World wide LoRa-APRS mode at 433.775MHz, Explicit mode, Error coding 4:5, Bandwidth 125kHz, SF 12,Low data rate optimize off - SUPPORTED  )
 ************************************************************************************/
-#define LORA_PAYLOAD_ID  "MYCALL"  // This will show on Sondehub. Payload ID for LoRa protocol. CHANGE THIS!
+#define LORA_PAYLOAD_ID  "MYCALL-L"  // This will show on Sondehub. Payload ID for LoRa protocol. CHANGE THIS!
 #define LORA_FREQUENCY  432.662     // in MHz
 #define LORA_MODE 2                 // Mode 2 is usually used for simple telemetry data
 #define LORA_REPEATS 1              // number of LoRa transmits during a cycle
-#define LORA_LOOPTIME 25            // Transmit LoRa every xx seconds
+#define LORA_LOOPTIME 120            // Transmit LoRa every xx seconds
 
 /***********************************************************************************
 * LORA-APRS SETTINGS

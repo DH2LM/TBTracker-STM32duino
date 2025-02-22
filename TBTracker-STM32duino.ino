@@ -16,7 +16,7 @@
 #include <Wire.h>
 #endif
 
-#define TBTRACKER_VERSION v0.1.1
+#define TBTRACKER_VERSION v0.2.0
 
 /***********************************************************************************
 * DATA STRUCTS
@@ -49,6 +49,7 @@ struct TLoRaSettings
   uint8_t CurrentLimit = LORA_CURRENTLIMIT;
   uint16_t PreambleLength =  LORA_PREAMBLELENGTH;
   uint8_t Gain = LORA_GAIN;
+  size_t implicitHeader = 255;
 } LoRaSettings;
 
 // Struct to hold FSK settings
@@ -145,6 +146,8 @@ unsigned long previousTX_LoRa_APRS = 0;
 bool disableLEDs;
 uint32_t prevTime = 1;
 uint32_t prevHeight = 0;
+volatile bool receivedFlag = false;
+
 
 //*********************************************************************************************************************
 // Generate a Horus Binary v1 packet, and populate it with data.
@@ -278,6 +281,8 @@ void setup()
   // float ftemp = getInternalTemp();
   // delay(500);
   digitalWrite(LED_GRN, LOW);
+  // Set the Tracker in receiving mode
+  if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
 }
 
 
@@ -288,71 +293,74 @@ void loop()
 
      // Get data from the GPS
      smartDelay(1000);   
-     CheckGPS();
-     
-     if(UGPS.Altitude > ALT_DISABLE_LEDs)
+     CheckGPS(); 
+   
+     // Process any received LoRa packets
+     if (LORA_ENABLED && RECEIVING_ENABLED && receivedFlag) 
      {
-        digitalWrite(LED_GPS, LOW);
-        digitalWrite(LED_GRN, LOW);
-        digitalWrite(LED_RED, LOW);
-        disableLEDs = true;
+       ProcessRXPacket();
      }
-     else disableLEDs = false;
-
-       // Send RTTY
-       if ((RTTY_ENABLED) && (currentMillis - previousTX_RTTY >= ((unsigned long)RTTY_LOOPTIME*(unsigned long)1000)))
-       { 
-          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
-          for (int i=1; i <= RTTY_REPEATS; i++)
-          {
-            CreateTXLine(RTTY_PAYLOAD_ID, RTTYCounter++, RTTY_PREFIX);
-            sendRTTY(Sentence); 
-          }
-          previousTX_RTTY = currentMillis;
-          digitalWrite(LED_GRN, LOW);
-       }
      
-       // Send LoRa 
-       if ((LORA_ENABLED) && (currentMillis - previousTX_LoRa >= ((unsigned long)LORA_LOOPTIME*(unsigned long)1000)))
-       { 
-          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
-          delay(1000);
-          for (int i=1; i <= LORA_REPEATS; i++)
-          {
-            CreateTXLine(LORA_PAYLOAD_ID, LoRaCounter++, LORA_PREFIX);
-            sendLoRa(Sentence,LORA_MODE); 
-          }
-          previousTX_LoRa = currentMillis;
-          digitalWrite(LED_GRN, LOW);
-       }
+     // Send RTTY
+     if ((RTTY_ENABLED) && (currentMillis - previousTX_RTTY >= ((unsigned long)RTTY_LOOPTIME*(unsigned long)1000)))
+     { 
+        if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+        for (int i=1; i <= RTTY_REPEATS; i++)
+        {
+          CreateTXLine(RTTY_PAYLOAD_ID, RTTYCounter++, RTTY_PREFIX);
+          sendRTTY(Sentence); 
+        }
+        previousTX_RTTY = currentMillis;
+        // Set the Tracker in receiving mode
+        if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
+     }
+     
+     // Send LoRa 
+     if ((LORA_ENABLED) && (currentMillis - previousTX_LoRa >= ((unsigned long)LORA_LOOPTIME*(unsigned long)1000)))
+     { 
+        delay(1000);
+        if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+        for (int i=1; i <= LORA_REPEATS; i++)
+        {
+          CreateTXLine(LORA_PAYLOAD_ID, LoRaCounter++, LORA_PREFIX);
+          sendLoRa(Sentence,LORA_MODE); 
+        }
+        previousTX_LoRa = currentMillis;
+        // Set the Tracker in receiving mode
+        if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
+     }
 
-       // Send HORUS V1
-       if ((HORUS_V1_ENABLED) && (currentMillis - previousTX_HorusV1 >= ((unsigned long)HORUS_LOOPTIME*(unsigned long)1000)))
-       {
-          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
-          delay(1000);
-          sendHorusV1();
-          previousTX_HorusV1 = currentMillis;
-          digitalWrite(LED_GRN, LOW);
-       }
+     // Send HORUS V1
+     if ((HORUS_V1_ENABLED) && (currentMillis - previousTX_HorusV1 >= ((unsigned long)HORUS_LOOPTIME*(unsigned long)1000)))
+     {
+        delay(1000);
+        if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+        sendHorusV1();
+        previousTX_HorusV1 = currentMillis;
+        // Set the Tracker in receiving mode
+        if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
+     }
 
-       // Send HORUS V2
-       if ((HORUS_V2_ENABLED) && (currentMillis - previousTX_HorusV2 >= ((unsigned long)HORUS_LOOPTIME*(unsigned long)1000)))
-       {
-          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
-          delay(1000);  
-          sendHorusV2();
-          previousTX_HorusV2 = currentMillis;
-          digitalWrite(LED_GRN, LOW);
-       }
+     // Send HORUS V2
+     if ((HORUS_V2_ENABLED) && (currentMillis - previousTX_HorusV2 >= ((unsigned long)HORUS_LOOPTIME*(unsigned long)1000)))
+     {
+        delay(1000);  
+        if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+        sendHorusV2();
+        previousTX_HorusV2 = currentMillis;
+        // Set the Tracker in receiving mode
+        if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
+     }
 
-       // Send LORA-APRS
-       if ((LORA_APRS_ENABLED) && (currentMillis - previousTX_LoRa_APRS >= ((unsigned long)LORA_APRS_LOOPTIME*(unsigned long)1000)))
-       {
-          if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
-         delay(1000);
-         sendLoRaAprs();
-         previousTX_LoRa_APRS = currentMillis;
-         digitalWrite(LED_GRN, LOW);
-       }
+     // Send LORA-APRS
+     if ((LORA_APRS_ENABLED) && (currentMillis - previousTX_LoRa_APRS >= ((unsigned long)LORA_APRS_LOOPTIME*(unsigned long)1000)))
+     {
+       delay(1000);
+       if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+       sendLoRaAprs();
+       previousTX_LoRa_APRS = currentMillis;
+        // Set the Tracker in receiving mode
+        if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
+     }
+     
 }
