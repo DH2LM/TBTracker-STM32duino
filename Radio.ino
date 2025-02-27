@@ -635,14 +635,14 @@ void StartReceiveLoRaPacket()
 
    if (state == RADIOLIB_ERR_NONE) 
    {
-     Serial.println(F("success!"));
-     Serial.print(F("[LoRa] Waiting for packets on: ")); Serial.print(LoRaSettings.Frequency,3); Serial.println(F(" MHz"));
-     Serial.println(F("----------------------------"));
+     // SerialDebug.println(F("success!"));
+     // SerialDebug.print(F("[LoRa] Waiting for packets on: ")); // SerialDebug.print(LoRaSettings.Frequency,3); // SerialDebug.println(F(" MHz"));
+     // SerialDebug.println(F("----------------------------"));
    } 
    else 
    {
-     Serial.print(F("failed, code "));
-     Serial.println(state);
+     // SerialDebug.print(F("failed, code "));
+     // SerialDebug.println(state);
      // while (true);
    }
 }

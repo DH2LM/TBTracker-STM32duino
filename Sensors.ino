@@ -20,8 +20,6 @@ float temperature, humidity, pressure;
 
 // You will need to create your own code here.
 
-bool BMEIsValid = false;
-
 //Taken from official STM32duino doc
 static int32_t readVref()
 {
@@ -68,29 +66,6 @@ static int32_t readVoltage(int32_t VRef, uint32_t pin)
 #endif
 }
 
-void SetupBME280()
-{
-  #ifdef USE_BME280
-  uint8_t timeout = 0;
-  Wire.begin(SDA, SCL);
-
-  while(bme.begin() && timeout < 20) {
-    BMEIsValid = false;
-    timeout++;
-    digitalWrite(LED_RED, !digitalRead(LED_RED));
-    delay(500);
-  }
-
-  // bme.setSettings(Bme280Settings::weatherMonitoring());
-  // bme.sleep();
-  if(timeout < 20) BMEIsValid = true;
-
-  temperature = ReadTemp();
-  pressure = ReadPres();
-  humidity = ReadHumi();
-  #endif
-}
-
 //===============================================================================
 // Read the VCC voltage.
 // Create your own code here
@@ -119,55 +94,10 @@ float ReadVCC()
   return (batVoltage);
 }
 
-
-//===============================================================================
-// Read the internal chip temperature//
-// Create your own code here
-
-//This will read the temperature off the BME280, if one is connected.
-//Else it will return 0.0
-float ReadTemp(void)
+int32_t ReadTemp()
 {
-  if(!BMEIsValid) return 0.0;
-  float temp = 0.0;
+  int32_t i32vrefVal = readVref();
+  int32_t i32tempVal = readTempSensor(i32vrefVal);
 
-  #ifdef USE_BME280
-  bme.takeForcedMeasurement();
-  temp = bme.getTemperatureCelsiusAsFloat(true);
-  #endif
-
-  // The returned temperature is in degrees Celcius.
-  return (temp);
-}
-
-//This will read the humidity off the BME280, if one is connected.
-//Else it will return 0.0
-float ReadHumi(void)
-{
-  if(!BMEIsValid) return 0.0;
-  float humi = 0.0;
-
-  #ifdef USE_BME280
-  bme.takeForcedMeasurement();
-  humi = bme.getRelativeHumidityAsFloat();
-  #endif
-
-  // The returned humidity is in Percent.
-  return(humi);
-}
-
-//This will read the pressure off the BME280, if one is connected.
-//Else it will return 0.0
-float ReadPres(void)
-{
-  if(!BMEIsValid) return 0.0;
-  float pres = 0.0;
-
-  #ifdef USE_BME280
-  bme.takeForcedMeasurement();
-  pres = bme.getPressureAsFloat();
-  #endif
-
-  // The returned pressure is in Hectopascal (hPa).
-  return(pres);
+  return i32tempVal;
 }

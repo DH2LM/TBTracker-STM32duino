@@ -272,8 +272,7 @@ void setup()
 
     // Setup the Radio
   ResetRadio();
-  SetupRadio();  
-  SetupBME280();
+  SetupRadio();
 
   digitalWrite(LED_GRN, HIGH);
 
@@ -285,6 +284,18 @@ void setup()
   if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
 }
 
+void checkLEDs()
+{
+  if(UGPS.Altitude > ALT_DISABLE_LEDs)
+  {
+    disableLEDs = true;
+    digitalWrite(LED_RED, LOW);
+    digitalWrite(LED_GRN, LOW);
+    digitalWrite(LED_GPS, LOW);
+  }
+  else disableLEDs = false;
+}
+
 
 //============================================================================
 void loop()
@@ -294,6 +305,7 @@ void loop()
      // Get data from the GPS
      smartDelay(1000);   
      CheckGPS(); 
+     checkLEDs();
    
      // Process any received LoRa packets
      if (LORA_ENABLED && RECEIVING_ENABLED && receivedFlag) 
@@ -305,12 +317,18 @@ void loop()
      if ((RTTY_ENABLED) && (currentMillis - previousTX_RTTY >= ((unsigned long)RTTY_LOOPTIME*(unsigned long)1000)))
      { 
         if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+
+        if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
+
         for (int i=1; i <= RTTY_REPEATS; i++)
         {
           CreateTXLine(RTTY_PAYLOAD_ID, RTTYCounter++, RTTY_PREFIX);
           sendRTTY(Sentence); 
         }
         previousTX_RTTY = currentMillis;
+
+        digitalWrite(LED_GRN, LOW);
+
         // Set the Tracker in receiving mode
         if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
      }
@@ -320,12 +338,18 @@ void loop()
      { 
         delay(1000);
         if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+
+        if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
+
         for (int i=1; i <= LORA_REPEATS; i++)
         {
           CreateTXLine(LORA_PAYLOAD_ID, LoRaCounter++, LORA_PREFIX);
           sendLoRa(Sentence,LORA_MODE); 
         }
         previousTX_LoRa = currentMillis;
+
+        digitalWrite(LED_GRN, LOW);
+
         // Set the Tracker in receiving mode
         if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
      }
@@ -335,8 +359,14 @@ void loop()
      {
         delay(1000);
         if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+
+        if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
+
         sendHorusV1();
         previousTX_HorusV1 = currentMillis;
+
+        digitalWrite(LED_GRN, LOW);
+
         // Set the Tracker in receiving mode
         if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
      }
@@ -346,8 +376,14 @@ void loop()
      {
         delay(1000);  
         if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+
+        if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
+
         sendHorusV2();
         previousTX_HorusV2 = currentMillis;
+
+        digitalWrite(LED_GRN, LOW);
+
         // Set the Tracker in receiving mode
         if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
      }
@@ -357,8 +393,14 @@ void loop()
      {
        delay(1000);
        if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+
+       if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
+
        sendLoRaAprs();
        previousTX_LoRa_APRS = currentMillis;
+
+       digitalWrite(LED_GRN, LOW);
+       
         // Set the Tracker in receiving mode
         if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
      }

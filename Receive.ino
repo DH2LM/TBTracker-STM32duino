@@ -13,9 +13,9 @@ void ProcessRXPacket()
   // EXAMPLE OF RX ACTION 
 
   // reset the data received flag
-  Serial.println("============================================");
-  Serial.println("PACKET RECEIVED!");
-  Serial.println("============================================");
+  // SerialDebug.println("============================================");
+  // SerialDebug.println("PACKET RECEIVED!");
+  // SerialDebug.println("============================================");
   
   // Grab the data from the radio module
   switch(LORA_MODE)
@@ -31,19 +31,30 @@ void ProcessRXPacket()
   // Packet was successfully received
   if (state == RADIOLIB_ERR_NONE) 
   {
-      Serial.print( "Packet length: "); Serial.println(radio.getPacketLength());
-      Serial.print("          RSSI: "); Serial.println(radio.getRSSI());
-      Serial.print("           SNR: "); Serial.println(radio.getSNR());
-      Serial.print("First 10 chars: ");
+      // SerialDebug.print( "Packet length: "); // SerialDebug.println(radio.getPacketLength());
+      // SerialDebug.print("          RSSI: "); // SerialDebug.println(radio.getRSSI());
+      // SerialDebug.print("           SNR: "); // SerialDebug.println(radio.getSNR());
+      // SerialDebug.print("First 10 chars: ");
       // Print the first 10 hex chars of the packet
-      Serial.print("[RADIO] first 10 hex chars:\t");
+      // SerialDebug.print("[RADIO] first 10 hex chars:\t");
+
+      digitalWrite(LED_GRN, LOW);
+      digitalWrite(LED_RED, HIGH);
+
       for (int i = 0; i < 10; i++)
       {
-        Serial.print(buf[i],HEX);
-        Serial.print(" ");
+        // SerialDebug.print(buf[i],HEX);
+        // SerialDebug.print(" ");
+        delay(10);
+        digitalWrite(LED_GRN, !digitalRead(LED_GRN));
+        digitalWrite(LED_RED, !digitalRead(LED_RED));
       }
-      Serial.println();
-      Serial.println("============================================");
+
+      digitalWrite(LED_RED, LOW);
+      digitalWrite(LED_GRN, HIGH);
+
+      // SerialDebug.println();
+      // SerialDebug.println("============================================");
   }
 
   // Reset the received flag  
