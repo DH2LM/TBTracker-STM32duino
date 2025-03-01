@@ -12,9 +12,6 @@
 #include <RadioLib.h>
 #include "horus_l2.h"
 #include <SoftwareSerial.h>
-#ifdef USE_BME280
-#include <Wire.h>
-#endif
 
 #define TBTRACKER_VERSION v0.2.0
 
@@ -147,7 +144,9 @@ bool disableLEDs;
 uint32_t prevTime = 1;
 uint32_t prevHeight = 0;
 volatile bool receivedFlag = false;
-
+float bme_temp = 0.0;
+float bme_humi = 0.0;
+float bme_pres = 0.0;
 
 //*********************************************************************************************************************
 // Generate a Horus Binary v1 packet, and populate it with data.
@@ -204,6 +203,12 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
   else if(i32tempVal > 127) i8tempVal = 127;
   else i8tempVal = i32tempVal;
 
+  //force measurement off BME280
+  MeasureBME(false);
+  uint8_t ui8humi = round(bme_humi);
+  int16_t i16extTemp = round(bme_temp * 10.0);
+  uint16_t ui16pres = round(bme_pres * 10.0);
+
   BinaryPacketV2.PayloadID   = PAYLOAD_ID_V2; 
   BinaryPacketV2.Counter     = horusCounterV2++;
   BinaryPacketV2.Hours       = UGPS.Hours;
@@ -225,9 +230,9 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
   // BinaryPacketV2.unused      = 0;    // Two unused filler bytes
   
   BinaryPacketV2.dummy1      = iAscRate;  // int16_t Interpreted as Ascent rate divided by 100 for 4FSKTEST-V2. This value would display as 2.0 on HabHub 
-  BinaryPacketV2.dummy2      = 0;  // int16_t External temperature divided by 10 for 4FSKTEST-V2. This value would display as -2.0 on HabHub   
-  BinaryPacketV2.dummy3      = 0;   // uint8_t External humidity for 4FSKTEST-V2. This value would display as 51 on HabHub  
-  BinaryPacketV2.dummy4      = 0;   // uint16_t External pressure divided by 10 for 4FSKTEST-V2. This value would display as 2.1 on HabHub  
+  BinaryPacketV2.dummy2      = i16extTemp;  // int16_t External temperature divided by 10 for 4FSKTEST-V2. This value would display as -2.0 on HabHub   
+  BinaryPacketV2.dummy3      = ui8humi;   // uint8_t External humidity for 4FSKTEST-V2. This value would display as 51 on HabHub  
+  BinaryPacketV2.dummy4      = ui16pres;   // uint16_t External pressure divided by 10 for 4FSKTEST-V2. This value would display as 2.1 on HabHub  
   BinaryPacketV2.unused      = 0;    // Two unused filler bytes
   BinaryPacketV2.Checksum    = (uint16_t)crc16((unsigned char*)&BinaryPacketV2,sizeof(BinaryPacketV2)-2);
 
@@ -273,6 +278,10 @@ void setup()
     // Setup the Radio
   ResetRadio();
   SetupRadio();
+
+  delay(500);
+  SetupBME();
+  MeasureBME(false);
 
   digitalWrite(LED_GRN, HIGH);
 

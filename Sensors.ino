@@ -1,11 +1,10 @@
 #ifdef USE_BME280
-#include <Wire.h>
+#include <SoftI2C.h>
+#include <forcedClimate.h>
 
-#include <forcedBMX280.h>
+SoftI2C i2c(SDA, SCL);
 
-ForcedBME280Float bme = ForcedBME280Float(); 
-
-float temperature, humidity, pressure;
+ForcedClimate climateSensor = ForcedClimate(i2c);
 #endif
 
 #define CALX_TEMP 30
@@ -18,6 +17,7 @@ float temperature, humidity, pressure;
 #define LL_ADC_RESOLUTION LL_ADC_RESOLUTION_12B
 #define ADC_RANGE 4096
 
+bool bmeIsValid = false;
 // You will need to create your own code here.
 
 //Taken from official STM32duino doc
@@ -100,4 +100,25 @@ int32_t ReadTemp()
   int32_t i32tempVal = readTempSensor(i32vrefVal);
 
   return i32tempVal;
+}
+
+// Functions for BME280
+void SetupBME()
+{
+  i2c.begin();
+
+  climateSensor.begin();
+}
+
+void MeasureBME(bool tempOnly)
+{
+  climateSensor.takeForcedMeasurement();
+
+  bme_temp = climateSensor.getTemperatureCelcius();
+
+  if(!tempOnly)
+  {
+    bme_humi = climateSensor.getRelativeHumidity();
+    bme_pres = climateSensor.getPressure();
+  }
 }

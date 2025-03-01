@@ -10,6 +10,8 @@ SX1278 radio = new Module(PIN_NSS, PIN_DIO0, PIN_DIO1);
 // create RTTY client instance using the radio module
 RTTYClient rtty(&radio);
 
+int telemCounter = 0;
+
 
 /************************************************************************************
 * this function is called when a complete packet is received by the radio module
@@ -452,75 +454,6 @@ void sendHorusV2()
 }
 
 //===============================================================================
-#ifdef LORA_APRS_TELEM_ENABLED
-#if LORA_APRS_TELEM_ENABLED == true
-//Calculates a telemetry value according to formula in APRS101:
-//TelemVal = a*v² + b*v + c
-uint8_t calculateTelemValue(float vi, float a, float b, float c)
-{
-  uint8_t v = 0;
-  float rawVal = (a*(vi*vi)) + (b*vi) + c;
-
-  if(rawVal > 255) v = 255;
-  else if(rawVal < 0) v = 0;
-  else v = round(rawVal);
-
-  return v;
-}
-
-String generateLoraAprsTelemetry()
-{
-  static uint16_t lnr = 0;
-  char telemBuf[31];
-  String aprs_packet;
-
-  aprs_packet = "";
-  aprs_packet += "<\xff\x01";
-  // Add Source
-  aprs_packet += LORA_APRS_PAYLOAD_ID;
-  // Add SSID
-  aprs_packet += LORA_APRS_SSID;
-  //Add Destination (do not use digipeating)
-  aprs_packet += ">";
-  aprs_packet += "APETBT";   // destination callsign_APRS_DEST;
-  // start of "real" data (Telemetry, duh)
-  aprs_packet += ":T#";
-
-  //Add Telemetry payload
-  //Equations
-  //Voltage = (value) * 0.02; --> Range: 0 .. ~5.1V
-  //Temperature = (value) * 0.5 - 70; --> Range: -70 ..  57.5 °C
-  //Speed = (value) * 1 --> 0 .. 255 km/h
-  //Climb = (value) * 0.2 - 50; --> Range: -50 .. 21 m/s
-  
-  float fVoltage = ReadVCC();
-  uint8_t ui8val1=calculateTelemValue(fVoltage, 0, 50, 0);
-
-  int32_t i32vrefVal = readVref();
-  int32_t i32tempVal = readTempSensor(i32vrefVal);
-  uint8_t ui8val2= calculateTelemValue((i32tempVal+70), 0, 2, 0);
-  uint8_t ui8val3= calculateTelemValue(UGPS.Speed, 0, 1, 0);
-  uint8_t ui8val4= calculateTelemValue((UGPS.Climb + 40.0), 0, 3.2, 0);
-  uint8_t ui8val5=0;
-  sprintf(telemBuf, "%03d,%03d,%03d,%03d,%03d,%03d,00000000",
-    lnr,
-    ui8val1,
-    ui8val2,
-    ui8val3,
-    ui8val4,
-    ui8val5
-  );
-
-  aprs_packet += telemBuf;
-
-  lnr++;
-  if(lnr > 999) lnr = 0;
-
-  return aprs_packet;
-}
-#endif
-#endif
-
 void sendLoRaAprs()
 {
    String aprs_packet;
@@ -569,46 +502,56 @@ void sendLoRaAprs()
 
 #ifdef LORA_APRS_TELEM_ENABLED
 #if LORA_APRS_TELEM_ENABLED == true
-    delay(2000);
-
-    aprs_packet = generateLoraAprsTelemetry();
-    sendLoRa(aprs_packet, LORA_APRS_MODE);
-
-    if(!infoSent)
+    if (telemCounter == 0)
     {
-        delay(2500);
-        infoSent = true;
-        String header = "";
-        header += "<\xff\x01";   
-        header += LORA_APRS_PAYLOAD_ID;
-        // Add SSID
-        header += LORA_APRS_SSID;
-        //Add Destination (do not use digipeating)
-        header += ">";
-        header += "APETBT::";   // destination callsign_APRS_DEST;
-        String strCall = String(LORA_APRS_PAYLOAD_ID) + String(LORA_APRS_SSID);
-        for(int i=0; i<10-strCall.length(); i++) strCall += " ";
-        header += strCall;
-        header += ":";
+      delay(2000);
 
-        //Parameter info
-        aprs_packet = header + "PARM.Voltage,Temp,Speed,Climb";
-        sendLoRa(aprs_packet, LORA_APRS_MODE);
+      aprs_packet = generateLoraAprsTelemetry();
+      sendLoRa(aprs_packet, LORA_APRS_MODE);
 
-        delay(2500);
-        //Units
-        aprs_packet = header + "UNIT.VDC,DegC,kph,mps";
-        sendLoRa(aprs_packet, LORA_APRS_MODE);
-
-        delay(2500);
-        //Equations
-        //(value) = a * target² + b * target + c
-        //Voltage = (value) * 0.02; --> Range: 0 .. ~5.1V
-        //Temperature = (value) * 0.5 - 70; --> Range: -70 ..  57.5 °C
-        //Speed = (value) * 1 --> 0 .. 255 km/h
-        aprs_packet = header + "EQNS.0,0.02,0,0,0.5,-70,0,1,0,0,0.3125,-40";
-        sendLoRa(aprs_packet, LORA_APRS_MODE);
+      delay(2000);
+      aprs_packet = generateWXPayload();
+      sendLoRa(aprs_packet, LORA_APRS_MODE);
     }
+
+    telemCounter++;
+    if(telemCounter >= LORA_APRS_TELEMETRY_EVERY) telemCounter = 0;
+
+    // if(!infoSent)
+    // {
+    //     delay(2500);
+    //     infoSent = true;
+    //     String header = "";
+    //     header += "<\xff\x01";   
+    //     header += LORA_APRS_PAYLOAD_ID;
+    //     // Add SSID
+    //     header += LORA_APRS_SSID;
+    //     //Add Destination (do not use digipeating)
+    //     header += ">";
+    //     header += "APETBT::";   // destination callsign_APRS_DEST;
+    //     String strCall = String(LORA_APRS_PAYLOAD_ID) + String(LORA_APRS_SSID);
+    //     for(int i=0; i<10-strCall.length(); i++) strCall += " ";
+    //     header += strCall;
+    //     header += ":";
+
+    //     //Parameter info
+    //     aprs_packet = header + "PARM.Voltage,Temp,Speed,Climb";
+    //     sendLoRa(aprs_packet, LORA_APRS_MODE);
+
+    //     delay(2500);
+    //     //Units
+    //     aprs_packet = header + "UNIT.VDC,DegC,kph,mps";
+    //     sendLoRa(aprs_packet, LORA_APRS_MODE);
+
+    //     delay(2500);
+    //     //Equations
+    //     //(value) = a * target² + b * target + c
+    //     //Voltage = (value) * 0.02; --> Range: 0 .. ~5.1V
+    //     //Temperature = (value) * 0.5 - 70; --> Range: -70 ..  57.5 °C
+    //     //Speed = (value) * 1 --> 0 .. 255 km/h
+    //     aprs_packet = header + "EQNS.0,0.02,0,0,0.5,-70,0,1,0,0,0.3125,-40";
+    //     sendLoRa(aprs_packet, LORA_APRS_MODE);
+    // }
 #endif
 #endif
 }
