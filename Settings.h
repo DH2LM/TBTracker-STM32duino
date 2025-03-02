@@ -18,7 +18,7 @@
 #define LED_GRN PA11
 #define ALT_DISABLE_LEDs 1500
 
-// #define USE_BME280
+#define USE_BME280
 #define SCL PB8
 #define SDA PB9
 
@@ -41,12 +41,13 @@
 * See below for the settings for the different protocols
 ************************************************************************************/
 #define RTTY_ENABLED false      // Set to true if you want RTTY transmissions
-#define LORA_ENABLED true       // Set to true if you want LoRa transmissions
+#define LORA_ENABLED false       // Set to true if you want LoRa transmissions
 #define RECEIVING_ENABLED false // Set to true if you want the Tracker to listen on the LoRa frequency for incoming packets
 #define HORUS_V1_ENABLED false  // Set to true if you want HorusBinary V1 transmissions
-#define HORUS_V2_ENABLED true  // Set to true if you want HorusBinary V2 transmissions
-#define LORA_APRS_ENABLED true  // Set to true if you want LORA-APRS transmissions (experimental)
-#define LORA_APRS_TELEM_ENABLED true //Set to true if you want LORA-APRS transmit telemetry data
+#define HORUS_V2_ENABLED false  // Set to true if you want HorusBinary V2 transmissions
+#define LORA_APRS_ENABLED false  // Set to true if you want LORA-APRS transmissions (experimental)
+#define LORA_APRS_TELEM_ENABLED false //Set to true if you want LORA-APRS transmit telemetry data
+#define LORA_APRS_TELEMETRY_EVERY 3 //Set in how many runs you want to transmit APRS telemetry + weather payload (Default: every 3 runs)
 
 /***********************************************************************************
 * RTTY SETTINGS

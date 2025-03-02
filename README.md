@@ -42,6 +42,16 @@ See: https://github.com/projecthorus/horusbinary_radiolib
 # Installation
 Change the values in the settings.h file.See the comments in the settings.h file. 
 Prepare compilation in the Arduino IDE:
+(If not already done, install STM32 for Arduino IDE first):
+- In Boards Manager search for "STM32".  - Install "STM32 MCU based boards".
+
+(If not already done, install required libraries first):
+- Search for following libraries in library manager and install them:
+  - "Time" by Michael Margolis
+  - "TinyGPSPlus" (AKA TinyGPS+) by Mikal Hart
+  - "SoftI2C" by Yasir Shahzad
+
+Start here if you already installed STM32 for Arduino IDE and required libraries:
 - Set the correct board: Tools -> Board -> STM32 MCU Based Boards -> Generic STM32G0 Series
 - Select the correct model: Tools -> Board Part Number -> Generic G031F8Px
 - Disable Serial, as it causes problems for now: Tools -> U(S)ART Support -> Disabled (No Serial Support)
@@ -68,7 +78,7 @@ V0.2.0:
 - [X] Get the code running on STM32
 - [X] Get Radio running
 - [X] Get GPS running
-- [ ] Add documentation on how to get the STM32 Programmer running
+- [X] Add documentation on how to get the STM32 Programmer running
 - [X] Implement code for BME280 sensor
 - [X] Implement code for reading battery voltage from ADC and convert the ADC value into the voltage
 - [X] Add functionality for Horus to report climbing speed, travel speed, temperature
