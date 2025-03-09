@@ -84,3 +84,9 @@ V0.2.0:
 - [X] Add functionality for Horus to report climbing speed, travel speed, temperature
 - [X] Implement LoRa APRS Telemetry
 - [ ] Fix LoRa APRS Climbing speed, it is buggy at the moment. Somehow it works in Horus though
+
+## As of the test flight of March 8th 2025 some more issues showed up. These will be addressed in further revisions.
+ - [ ] Change the design of the radio to use a TCXO to minimize drift and maximize frequency accuracy
+ - [ ] Check how climbing speed is calculated. Negative climbing speeds were never provided.
+ - [ ] Add payload to APRS data to make it compatible with Sondehub
+ - [ ] Add altitude to APRS telemetry, not just position
