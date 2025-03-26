@@ -87,6 +87,7 @@ V0.2.0:
 
 ## As of the test flight of March 8th 2025 some more issues showed up. These will be addressed in further revisions.
  - [ ] Change the design of the radio to use a TCXO to minimize drift and maximize frequency accuracy
- - [ ] Check how climbing speed is calculated. Negative climbing speeds were never provided.
+ - [ ] Check how climbing speed is calculated. Negative climbing speeds were never provided
  - [ ] Add payload to APRS data to make it compatible with Sondehub
  - [ ] Add altitude to APRS telemetry, not just position
+ - [ ] Fix weather payload in APRS, or omit it if Sondehub is more suited
