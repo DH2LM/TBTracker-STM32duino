@@ -5,7 +5,23 @@
 #define PACKETLEN 255
 
 // Change 'SX1278' in the line below to 'SX1276' if you have a SX1276 module.
-SX1278 radio = new Module(PIN_NSS, PIN_DIO0, PIN_DIO1);
+// SX1278 radio = new Module(PIN_NSS, PIN_DIO0, PIN_DIO1);
+STM32WLx radio = new STM32WLx_Module();
+
+// set RF switch configuration for Nucleo WL55JC1
+// NOTE: other boards may be different!
+//       Some boards may not have either LP or HP.
+//       For those, do not set the LP/HP entry in the table.
+static const uint32_t rfswitch_pins[] =
+                         {PB8, PC13, PC13, PC13, PC13};
+
+static const Module::RfSwitchMode_t rfswitch_table[] = {
+  {STM32WLx::MODE_IDLE,  {LOW, LOW}},
+  {STM32WLx::MODE_RX,    {HIGH, LOW}},
+  // {STM32WLx::MODE_TX_LP, {HIGH}},
+  {STM32WLx::MODE_TX_HP, {LOW, HIGH}},
+  END_OF_MODE_TABLE,
+};
 
 // create RTTY client instance using the radio module
 RTTYClient rtty(&radio);
@@ -25,7 +41,8 @@ void setFlag(void)
 
 void unsetFlag(void) 
 {
-  radio.clearDio0Action();
+  // radio.clearDio0Action();
+  radio.clearDio1Action();
 }
 
 //===============================================================================
@@ -135,8 +152,7 @@ void SetupFSK()
                                FSKSettings.FreqDev,
                                FSKSettings.RXBandwidth,
                                FSKSettings.Power,
-                               FSKSettings.PreambleLength,
-                               FSKSettings.EnableOOK);
+                               FSKSettings.PreambleLength);
 
 
   if(state == RADIOLIB_ERR_NONE) // Change this to (state == ERR_NONE) if you use an older radiolib library
@@ -251,8 +267,7 @@ void SetupLoRa(int aMode)
     LoRaSettings.CodeRate,
     LoRaSettings.SyncWord,
     LoRaSettings.Power,
-    LoRaSettings.PreambleLength, 
-    LoRaSettings.Gain
+    LoRaSettings.PreambleLength
   );
   
   switch(LORA_MODE) 
@@ -296,8 +311,22 @@ void SetupLoRa(int aMode)
 void SetupRadio()
 {
   // Setting up the radio
+  radio.setRfSwitchTable(rfswitch_pins, rfswitch_table);
+  radio.XTAL = false;
+
   if (RTTY_ENABLED) {SetupRTTY();}
   if (LORA_ENABLED) {SetupLoRa(LORA_MODE);}
+
+  // int16_t state = radio.setOutputPower(DEFAULT_POWER);
+  // if(state != 0)
+  // {
+  //   while(true)
+  //   {
+  //     giveF();
+  //     giveL();
+  //     delay(700);
+  //   }
+  // }
 }
 
 //===============================================================================
@@ -565,7 +594,7 @@ void StartReceiveLoRaPacket()
    int16_t state;
 
    SetupLoRa(LORA_MODE);  
-   radio.setDio0Action(setFlag, RISING);  // As of RadioLib 6.0.0 all methods to attach interrupts no longer have a default level change direction
+   radio.setPacketReceivedAction(setFlag);  // As of RadioLib 6.0.0 all methods to attach interrupts no longer have a default level change direction
 
   if (LORA_MODE == 1) 
   {

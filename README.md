@@ -42,16 +42,6 @@ See: https://github.com/projecthorus/horusbinary_radiolib
 # Installation
 Change the values in the settings.h file.See the comments in the settings.h file. 
 Prepare compilation in the Arduino IDE:
-(If not already done, install STM32 for Arduino IDE first):
-- In Boards Manager search for "STM32".  - Install "STM32 MCU based boards".
-
-(If not already done, install required libraries first):
-- Search for following libraries in library manager and install them:
-  - "Time" by Michael Margolis
-  - "TinyGPSPlus" (AKA TinyGPS+) by Mikal Hart
-  - "SoftI2C" by Yasir Shahzad
-
-Start here if you already installed STM32 for Arduino IDE and required libraries:
 - Set the correct board: Tools -> Board -> STM32 MCU Based Boards -> Generic STM32G0 Series
 - Select the correct model: Tools -> Board Part Number -> Generic G031F8Px
 - Disable Serial, as it causes problems for now: Tools -> U(S)ART Support -> Disabled (No Serial Support)
@@ -78,16 +68,9 @@ V0.2.0:
 - [X] Get the code running on STM32
 - [X] Get Radio running
 - [X] Get GPS running
-- [X] Add documentation on how to get the STM32 Programmer running
+- [ ] Add documentation on how to get the STM32 Programmer running
 - [X] Implement code for BME280 sensor
 - [X] Implement code for reading battery voltage from ADC and convert the ADC value into the voltage
 - [X] Add functionality for Horus to report climbing speed, travel speed, temperature
 - [X] Implement LoRa APRS Telemetry
 - [ ] Fix LoRa APRS Climbing speed, it is buggy at the moment. Somehow it works in Horus though
-
-## As of the test flight of March 8th 2025 some more issues showed up. These will be addressed in further revisions.
- - [ ] Change the design of the radio to use a TCXO to minimize drift and maximize frequency accuracy
- - [ ] Check how climbing speed is calculated. Negative climbing speeds were never provided
- - [ ] Add payload to APRS data to make it compatible with Sondehub
- - [ ] Add altitude to APRS telemetry, not just position
- - [ ] Fix weather payload in APRS, or omit it if Sondehub is more suited

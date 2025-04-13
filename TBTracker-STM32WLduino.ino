@@ -7,7 +7,7 @@
 ***********************************************************************************/
 
 #include "Settings.h"
-#include <SPI.h>
+// #include <SPI.h>
 // #include "esp32-hal-cpu.h"
 #include <RadioLib.h>
 #include "horus_l2.h"
@@ -267,11 +267,11 @@ void setup()
   delay(250);
 
     // SPI.begin(SCK,MISO,MOSI,CS);
-  SPI.setMISO(MISO);
-  SPI.setMOSI(MOSI);
-  // SPI.setSSEL(CS);
-  SPI.setSCLK(SCK);
-  SPI.begin();
+  // SPI.setMISO(MISO);
+  // SPI.setMOSI(MOSI);
+  // // SPI.setSSEL(CS);
+  // SPI.setSCLK(SCK);
+  // SPI.begin();
 
   digitalWrite(LED_GRN, LOW);
 
