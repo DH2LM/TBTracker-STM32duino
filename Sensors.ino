@@ -1,4 +1,4 @@
-#ifdef USE_BME280
+#if defined(USE_BME280) || defined(USE_BMP280)
 #include <SoftI2C.h>
 #include <forcedClimate.h>
 
@@ -105,20 +105,26 @@ int32_t ReadTemp()
 // Functions for BME280
 void SetupBME()
 {
+  #if defined(USE_BME280) || defined(USE_BMP280)
   i2c.begin();
 
   climateSensor.begin();
+  #endif
 }
 
 void MeasureBME(bool tempOnly)
 {
+  #if defined(USE_BME280) || defined(USE_BMP280)
   climateSensor.takeForcedMeasurement();
 
   bme_temp = climateSensor.getTemperatureCelcius();
 
   if(!tempOnly)
   {
+    #ifdef USE_BME280
     bme_humi = climateSensor.getRelativeHumidity();
+    #endif
     bme_pres = climateSensor.getPressure();
   }
+  #endif
 }

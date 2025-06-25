@@ -82,7 +82,18 @@ static void processGPSData()
 
  // Altitude
  if (gps.altitude.isValid())
+ {
     UGPS.Altitude = gps.altitude.meters();
+
+    #ifndef TESTMODE
+    uint64_t ntime = now();
+    UGPS.Climb = (float)( UGPS.Altitude - oalt ) / (float)( ntime - otime );
+    oalt = UGPS.Altitude;
+    otime = now();
+    #else
+    UGPS.Climb = -6.9;
+    #endif
+ }
  else
     UGPS.Altitude = 0;    
 

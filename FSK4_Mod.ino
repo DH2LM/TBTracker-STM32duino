@@ -28,7 +28,7 @@ int16_t fsk4_setup(PhysicalLayer* phy, float base, uint32_t shift, uint16_t rate
   }
 
   // round shift to multiples of frequency step size
-  if(shift % step < (step / 2)) {
+  if(shift % step < (step / 2.0)) {
     fsk4_shift = shift / step;
   } else {
     fsk4_shift = (shift / step) + 1;

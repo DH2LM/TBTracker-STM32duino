@@ -1,5 +1,6 @@
 /************************************************************************************
 * TBTracker-esp32 - roel@kroes.com
+* TBTracker-STM32 - dh2lm@darc.de
 * 
 *  FIRST THING YOU NEED TO DO IS ADJUST THE SETTINGS IN Settings.h
 *  
@@ -7,7 +8,7 @@
 ***********************************************************************************/
 
 #include "Settings.h"
-#include <SPI.h>
+// #include <SPI.h>
 // #include "esp32-hal-cpu.h"
 #include <RadioLib.h>
 #include "horus_l2.h"
@@ -23,15 +24,15 @@
 // Struct to hold GPS data
 struct TGPS
 {
-  int Hours, Minutes, Seconds, Day, Month, Year;
-  float Longitude, Latitude;
-  long Altitude;
-  uint32_t RawTime;
-  float Climb;
-  float Speed;
-  unsigned int Satellites;
+  int Hours=0, Minutes=0, Seconds=0, Day=0, Month=0, Year=0;
+  float Longitude=0.0, Latitude=0.0;
+  long Altitude=0;
+  uint32_t RawTime=0;
+  float Climb=0.0;
+  float Speed=0.0;
+  unsigned int Satellites=0;
   byte FlightMode;
-  unsigned int Heading;
+  unsigned int Heading=0;
 } UGPS;
 
 // Struct to hold LoRA settings
@@ -133,6 +134,7 @@ SoftwareSerial SerialGPS(Rx, Tx);
 char Sentence[SENTENCE_LENGTH];
 long RTTYCounter=1;
 long LoRaCounter=1;
+long FMCounter=1;
 long horusCounterV1=1;
 long horusCounterV2=1;
 unsigned long previousTX_LoRa = 0;
@@ -140,6 +142,8 @@ unsigned long previousTX_RTTY = 0;
 unsigned long previousTX_HorusV1 = 0;
 unsigned long previousTX_HorusV2 = 0;
 unsigned long previousTX_LoRa_APRS = 0;
+unsigned long previousTX_FM_APRS = 0;
+unsigned long previousTX_CW = 0;
 bool disableLEDs;
 uint32_t prevTime = 1;
 uint32_t prevHeight = 0;
@@ -197,6 +201,8 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
 
   //calculate voltage
   int32_t i32vrefVal = readVref();
+
+  //Get internal temperature
   int32_t i32tempVal = readTempSensor(i32vrefVal);
   int8_t i8tempVal;
   if(i32tempVal < -128) i8tempVal = -128;
@@ -204,10 +210,20 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
   else i8tempVal = i32tempVal;
 
   //force measurement off BME280
-  MeasureBME(false);
-  uint8_t ui8humi = round(bme_humi);
-  int16_t i16extTemp = round(bme_temp * 10.0);
-  uint16_t ui16pres = round(bme_pres * 10.0);
+  #if defined(USE_BME280) || defined(USE_BMP280)
+    MeasureBME(false);
+    #ifdef USE_BME280
+    uint8_t ui8humi = round(bme_humi);
+    #else
+    uint8_t ui8humi = 0;
+    #endif
+    int16_t i16extTemp = round(bme_temp * 10.0);
+    uint16_t ui16pres = round(bme_pres * 10.0);
+  #else
+    uint8_t ui8humi = 0;
+    int16_t i16extTemp = 0;
+    uint16_t ui16pres = 0;
+  #endif
 
   BinaryPacketV2.PayloadID   = PAYLOAD_ID_V2; 
   BinaryPacketV2.Counter     = horusCounterV2++;
@@ -244,7 +260,9 @@ int build_horus_binary_packet_v2(uint8_t *buffer)
 //============================================================================
 void setup()
 {
-    disableLEDs = false;
+  SystemClock_Config();
+  
+  disableLEDs = false;
   pinMode(LED_GRN, OUTPUT);
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GPS, OUTPUT);
@@ -267,11 +285,11 @@ void setup()
   delay(250);
 
     // SPI.begin(SCK,MISO,MOSI,CS);
-  SPI.setMISO(MISO);
-  SPI.setMOSI(MOSI);
-  // SPI.setSSEL(CS);
-  SPI.setSCLK(SCK);
-  SPI.begin();
+  // SPI.setMISO(MISO);
+  // SPI.setMOSI(MOSI);
+  // // SPI.setSSEL(CS);
+  // SPI.setSCLK(SCK);
+  // SPI.begin();
 
   digitalWrite(LED_GRN, LOW);
 
@@ -414,4 +432,37 @@ void loop()
         if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
      }
      
+     // Send FM-APRS
+     if ((FM_APRS_ENABLED) && (currentMillis - previousTX_FM_APRS >= ((unsigned long)FM_APRS_LOOPTIME*(unsigned long)1000)))
+     {
+       delay(1000);
+       if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+
+       if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
+
+       sendFMAprs();
+       previousTX_FM_APRS = currentMillis;
+
+       digitalWrite(LED_GRN, LOW);
+       
+        // Set the Tracker in receiving mode
+        if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
+     }
+
+    // Send CW
+     if ((CW_ENABLED) && (currentMillis - previousTX_CW >= ((unsigned long)CW_LOOPTIME*(unsigned long)1000)))
+     {
+       delay(1000);
+       if (LORA_ENABLED && RECEIVING_ENABLED) {unsetFlag();}
+
+       if(!disableLEDs) digitalWrite(LED_GRN, HIGH);
+
+       sendCW();
+       previousTX_CW = currentMillis;
+
+       digitalWrite(LED_GRN, LOW);
+       
+        // Set the Tracker in receiving mode
+        if (LORA_ENABLED && RECEIVING_ENABLED) {StartReceiveLoRaPacket();}
+     }
 }

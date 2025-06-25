@@ -1,5 +1,5 @@
-#ifndef _CW_H_
-#define _CW_H_
+#ifndef _CWLED_H_
+#define _CWLED_H_
 
 //This header file contains CW blink codes for the red LED in case of an error occuring.
 
@@ -17,6 +17,27 @@ void dah()
   delay(300);
   digitalWrite(LED_RED, LOW);
   delay(100);
+}
+
+void giveA()
+{
+  dit();
+  dah();
+}
+
+void giveC()
+{
+  dit();
+  dah();
+  dah();
+}
+
+void giveW()
+{
+  dah();
+  dit();
+  dah();
+  dit();
 }
 
 void giveL()
@@ -64,6 +85,14 @@ void giveH()
   dit();
   dit();
   dit();
+}
+
+void giveX()
+{
+  dah();
+  dit();
+  dit();
+  dah();
 }
 
 #endif
