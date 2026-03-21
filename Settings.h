@@ -46,6 +46,7 @@
 #define ALT_DISABLE_LEDs 1500
 
 #ifdef TinyTracker
+//Original variant with STM32G031F8P6 + Ra-01
 #define LED_GPS PC15
 #define LED_RED PB6
 #define LED_GRN PA11
@@ -70,6 +71,7 @@
 #endif
 
 #ifdef AttoAPRSv1
+//Original variant of AttoAPRS with STM32WLE5CCU6
 #define LED_GPS PA7
 #define LED_RED PA6
 #define LED_GRN PA5
@@ -84,15 +86,18 @@
 
 #define BAT_ADC PB2
 
+//Radio pin definition not needed for STM32WLx
 #define PIN_NSS   -1
 #define PIN_DIO0  -1
-#define PIN_BUSY  -1  // Not used in this sketch for sx1278
+#define PIN_BUSY  -1 
 #define PIN_RESET  -1
-#define PIN_DIO1  -1  // Not used in this sketch for sx1278
-#define PIN_DIO2  -1  // Not used in this sketch for sx1278
+#define PIN_DIO1  -1 
+#define PIN_DIO2  -1 
 #endif
 
 #ifdef AttoAPRSv2
+//New variant of AttoAPRS with STM32L432KBU6 + Si4432. Note that the Si4432 is not supported by all features of this sketch, as it is a more basic radio than the SX127x series.
+//For example, LoRa is NOT supported by Si4432, but the rest of the modes are.
 #define LED_GPS -1
 #define LED_GRN PB3
 #define LED_RED PB4
@@ -109,9 +114,9 @@
 
 #define PIN_NSS   PA4
 #define PIN_IRQ   PA5
-#define PIN_BUSY  -1  // Not used in this sketch for sx1278
+#define PIN_BUSY  -1  // Not used in this sketch for Si4432
 #define PIN_SDN   PA8
-#define PIN_DIO1  -1  // Not used in this sketch for sx1278
+#define PIN_DIO1  -1  // Not used in this sketch for Si4432
 #define PIN_DIO2  PA0 //AKA GPIO2
 #endif
 /***********************************************************************************

@@ -94,24 +94,24 @@ static void processGPSData()
     UGPS.Climb = -6.9;
     #endif
  }
- else
-    UGPS.Altitude = 0;    
+//  else
+//     UGPS.Altitude = 0;    
 
  if (UGPS.Altitude < 0)
    UGPS.Altitude = 0;    
 
- if(gps.time.isValid())
- {
-    if(gps.altitude.isValid())
-    {
-      uint64_t ntime = now();
-      UGPS.Climb = (float)( UGPS.Altitude - oalt ) / (float)( ntime - otime );
-      oalt = UGPS.Altitude;
-    }
+//  if(gps.time.isValid())
+//  {
+//     if(gps.altitude.isValid())
+//     {
+//       uint64_t ntime = now();
+//       UGPS.Climb = (float)( UGPS.Altitude - oalt ) / (float)( ntime - otime );
+//       oalt = UGPS.Altitude;
+//     }
 
-    otime = now();
+//     otime = now();
 
- }
+//  }
    
 }
 
